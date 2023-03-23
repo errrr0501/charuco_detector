@@ -16,6 +16,7 @@ set(${PROJECT_NAME}_CATKIN_COMPONENTS
     sensor_msgs
     tf2
     tf2_ros
+    message_generation
 )
 
 
@@ -28,6 +29,21 @@ find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
 
 
+
+#######################################################################################################################
+## Generate services in the 'srv' folder
+#######################################################################################################################
+add_service_files(
+  FILES
+  eye2base.srv
+
+)
+
+generate_messages(
+   DEPENDENCIES
+   std_msgs 
+   geometry_msgs
+ )
 #######################################################################################################################
 ## catkin specific configuration
 #######################################################################################################################
@@ -63,12 +79,14 @@ include_directories(
 )
 
 
+
 #==============================================================================
 # libraries
 #==============================================================================
 
 add_library(charuco_detector
     src/charuco_detector.cpp
+    #include/ini/ini.h
 )
 
 
@@ -85,7 +103,8 @@ add_executable(charuco_detector_node
 # library link
 #==============================================================================
 
-target_link_libraries(charuco_detector
+target_link_libraries(
+    charuco_detector
     ${catkin_LIBRARIES}
     ${OpenCV_LIBS}
 )

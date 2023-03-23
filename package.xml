@@ -20,4 +20,7 @@
 	<depend>sensor_msgs</depend>
 	<depend>tf2</depend>
 	<depend>tf2_ros</depend>
+  	<depend>message_generation</depend>
+	<depend>message_runtime</depend>
+
 </package>

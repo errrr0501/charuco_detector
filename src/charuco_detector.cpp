@@ -39,8 +39,8 @@ namespace charuco_detector {
 		private_node_handle_->param("charuco/minOtsuStdDev", detector_parameters_->minOtsuStdDev, 5.0);
 		private_node_handle_->param("charuco/errorCorrectionRate", detector_parameters_->errorCorrectionRate, 0.6);
 
-		private_node_handle_->param("charuco/squaresSidesSizeM", squares_sides_size_m_, 0.0280);
-		private_node_handle_->param("charuco/markersSidesSizeM", markers_sides_size_m_, 0.0168);
+		private_node_handle_->param("charuco/squaresSidesSizeM", squares_sides_size_m_, 0.0200);
+		private_node_handle_->param("charuco/markersSidesSizeM", markers_sides_size_m_, 0.0150);
 		private_node_handle_->param("charuco/numberOfBitsForMarkersSides", number_of_bits_for_markers_sides_, 6);
 		private_node_handle_->param("charuco/numberOfMarkers", number_of_markers_, 70);
 		private_node_handle_->param("charuco/numberOfSquaresInX", number_of_squares_in_x_, 10);
@@ -116,6 +116,74 @@ namespace charuco_detector {
 		}
 	}
 
+	void ChArUcoDetector::getCameraCalibrationCoefficient() {
+		std::vector<double> distortion;
+		std::vector<double> intrinsic;
+		// char *pwd = get_current_dir_name();
+		// double distortion;
+		// double intrinsic;
+		// ROS_WARN("============================");
+		// std::cout << *pwd <<std::endl;
+
+		inih::INIReader Camera_KD{"/home/iclab_luis/work/hand_eye_calibration/src/hand-eye-calibration/charuco_detector/config/camera_calibration/camera_calibration.ini"};
+		// inih::INIReader Camera_KD{"../../config/camera_calibration/camera_calibration.ini"};
+		// INIReader Camera_KD;
+		// Camera_KD.read("camera_calibration.ini");
+		// ROS_WARN("============================");
+
+    	if (Camera_KD.ParseError() != 0) {
+        	std::cout << "Can't load 'camera_calibration.ini'\n";
+        	return;
+    	}
+		camera_intrinsics_matrix = cv::Mat::zeros(3, 3, CV_64F);
+		camera_distortion_coefficients_matrix = cv::Mat::zeros(1, 5, CV_64F);
+		// std::cout<<Camera_KD.Get<double>("Distortion", "k1")<<std::endl;
+
+		// distortion.push_back(std::stod(Camera_KD.Get("Distortion", "k1" ,"UNKNOWN")));
+    	// distortion.push_back(std::stod(Camera_KD.Get("Distortion", "k2" ,"UNKNOWN")));
+    	// distortion.push_back(std::stod(Camera_KD.Get("Distortion", "t1" ,"UNKNOWN")));
+    	// distortion.push_back(std::stod(Camera_KD.Get("Distortion", "t2" ,"UNKNOWN")));
+    	// distortion.push_back(std::stod(Camera_KD.Get("Distortion", "k3" ,"UNKNOWN")));
+		// ROS_WARN("============================");
+
+
+		// intrinsic.push_back(std::stod(Camera_KD.Get("Intrinsic", "0_0" ,"UNKNOWN"))); 
+    	// intrinsic.push_back(std::stod(Camera_KD.Get("Intrinsic", "0_1" ,"UNKNOWN"))); 
+    	// intrinsic.push_back(std::stod(Camera_KD.Get("Intrinsic", "0_2" ,"UNKNOWN"))); 
+    	// intrinsic.push_back(std::stod(Camera_KD.Get("Intrinsic", "1_0" ,"UNKNOWN"))); 
+    	// intrinsic.push_back(std::stod(Camera_KD.Get("Intrinsic", "1_1" ,"UNKNOWN"))); 
+		// intrinsic.push_back(std::stod(Camera_KD.Get("Intrinsic", "1_2" ,"UNKNOWN"))); 
+    	// intrinsic.push_back(std::stod(Camera_KD.Get("Intrinsic", "2_0" ,"UNKNOWN"))); 
+    	// intrinsic.push_back(std::stod(Camera_KD.Get("Intrinsic", "2_1" ,"UNKNOWN"))); 
+    	// intrinsic.push_back(std::stod(Camera_KD.Get("Intrinsic", "2_2" ,"UNKNOWN"))); 
+
+		distortion.push_back(std::stod(Camera_KD.Get("Distortion", "k1")));
+    	distortion.push_back(std::stod(Camera_KD.Get("Distortion", "k2")));
+    	distortion.push_back(std::stod(Camera_KD.Get("Distortion", "t1")));
+    	distortion.push_back(std::stod(Camera_KD.Get("Distortion", "t2")));
+    	distortion.push_back(std::stod(Camera_KD.Get("Distortion", "k3")));
+
+
+		intrinsic.push_back(std::stod(Camera_KD.Get("Intrinsic", "0_0"))); 
+    	intrinsic.push_back(std::stod(Camera_KD.Get("Intrinsic", "0_1"))); 
+    	intrinsic.push_back(std::stod(Camera_KD.Get("Intrinsic", "0_2"))); 
+    	intrinsic.push_back(std::stod(Camera_KD.Get("Intrinsic", "1_0"))); 
+    	intrinsic.push_back(std::stod(Camera_KD.Get("Intrinsic", "1_1"))); 
+		intrinsic.push_back(std::stod(Camera_KD.Get("Intrinsic", "1_2"))); 
+    	intrinsic.push_back(std::stod(Camera_KD.Get("Intrinsic", "2_0"))); 
+    	intrinsic.push_back(std::stod(Camera_KD.Get("Intrinsic", "2_1"))); 
+    	intrinsic.push_back(std::stod(Camera_KD.Get("Intrinsic", "2_2"))); 
+
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++) {
+				camera_intrinsics_matrix.at<double>(i, j) = intrinsic[i * 3 + j];
+			}
+		}
+		for (int i = 0; i < 5; i++) {
+			camera_distortion_coefficients_matrix.at<double>(0, i) = distortion[i];
+		}
+
+	}
 
 	void ChArUcoDetector::cameraInfoCallback(const sensor_msgs::CameraInfo::ConstPtr &_msg) {
 		bool valid_camera_info = false;
@@ -125,21 +193,21 @@ namespace charuco_detector {
 				break;
 			}
 		}
-
 		if (valid_camera_info) {
+			getCameraCalibrationCoefficient();
 			camera_info_ = _msg;
-			camera_intrinsics_matrix = cv::Mat::zeros(3, 3, CV_64F);
-			camera_distortion_coefficients_matrix = cv::Mat::zeros(1, 5, CV_64F);
+			// camera_intrinsics_matrix = cv::Mat::zeros(3, 3, CV_64F);
+			// camera_distortion_coefficients_matrix = cv::Mat::zeros(1, 5, CV_64F);
 
-			for (int i = 0; i < 3; i++) {
-				for (int j = 0; j < 3; j++) {
-					camera_intrinsics_matrix.at<double>(i, j) = _msg->K[i * 3 + j];
-				}
-			}
+			// for (int i = 0; i < 3; i++) {
+			// 	for (int j = 0; j < 3; j++) {
+			// 		camera_intrinsics_matrix.at<double>(i, j) = _msg->K[i * 3 + j];
+			// 	}
+			// }
 
-			for (int i = 0; i < 5; i++) {
-				camera_distortion_coefficients_matrix.at<double>(0, i) = _msg->D[i];
-			}
+			// for (int i = 0; i < 5; i++) {
+			// 	camera_distortion_coefficients_matrix.at<double>(0, i) = _msg->D[i];
+			// }
 		} else {
 			ROS_WARN("Received invalid camera intrinsics (K all zeros)");
 		}

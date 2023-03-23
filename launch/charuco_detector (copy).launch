@@ -1,27 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
 	<!-- Change the following parameters according to the pattern in usage -->
-	<arg name="squares_sides_size_in_meters" default="0.0200" />
-	<arg name="markers_sides_size_in_meters" default="0.0150" />
-	<!-- <arg name="squares_sides_size_in_meters" default="0.0248" />
-	<arg name="markers_sides_size_in_meters" default="0.0155" /> -->
+	<arg name="squares_sides_size_in_meters" default="0.028" />
+	<arg name="markers_sides_size_in_meters" default="0.021" />
 	<arg name="number_of_squares_in_x" default="10" />
 	<arg name="number_of_squares_in_y" default="14" />
 	<arg name="number_of_markers" default="70" />
 	<arg name="number_of_bits_for_markers_sides" default="4" />
 	<arg name="dictionary_id" default="3" />
+
 	<!-- Change the following 2 topics to match the ones published by your camera sensor -->
-	<arg name="image_topic" default="/rgb/image_raw" />
-	<arg name="camera_info_topic" default="/rgb/camera_info" />
+	<arg name="image_topic" default="image_raw" />
+	<arg name="camera_info_topic" default="camera_info" />
 	<arg name="image_analysis_publish_topic" default="$(arg image_topic)_charuco_detection" />
 	<arg name="charuco_pose_publish_topic" default="$(arg image_topic)_charuco_pose" />
 
 	<!-- Change the charuco TF frame if you need poses to be estimated from several charuco boards -->
-	<arg name="charuco_tf_frame" default="calib_charuco" />
+	<arg name="charuco_tf_frame" default="charuco" />
 
 	<!-- If necessary, the TF publisher of the charuco_detector can use a custom frame_id instead of using the one present in the header of the sensor_msgs/Image messages -->
 	<!-- If [sensor_frame_override] is empty, the TF publisher will use [ image_msg.header.frame_id -> charuco_tf_frame ], otherwise it will use [ sensor_frame_override -> charuco_tf_frame ] -->
-	<arg name="sensor_frame_override" default="calib_camera" />
+	<arg name="sensor_frame_override" default="" />
 
 
 	<!-- Fine tune the yaml and parameters below if needed -->
@@ -30,7 +29,7 @@
 	<arg name="use_median_blur" default="false" />
 	<arg name="median_blur_k_size" default="3" /> <!-- must be odd number -->
 
-	<arg name="use_dynamic_range" default="false" />
+	<arg name="use_dynamic_range" default="true" />
 
 	<arg name="use_bilateral_filter" default="false" />
 	<arg name="bilateral_filter_pixel_neighborhood" default="5" />
@@ -68,8 +67,7 @@
 		<param name="charuco_pose_publish_topic" type="str" value="$(arg charuco_pose_publish_topic)" />
 
 		<param name="charuco_tf_frame" type="str" value="$(arg charuco_tf_frame)" />
-		<!-- <param name="sensor_frame_override" type="str" value="$(arg sensor_frame_override)" /> -->
-		<param name="sensor_frame_override" type="str" value="calib_camera" />
+		<param name="sensor_frame_override" type="str" value="$(arg sensor_frame_override)" />
 
 		<rosparam command="load" file="$(arg config_file)" ns="charuco" subst_value="true" />
 

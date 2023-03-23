@@ -13,7 +13,12 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <list>
 
+
+#include <ini/ini.h>
+// #include <INIReader.h>
+#include <unistd.h>
 // external libs includes
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -56,7 +61,7 @@ namespace charuco_detector {
 										cv::Vec3d &_camera_rotation_out, cv::Vec3d &_camera_translation_out,
 										cv::InputOutputArray _image_with_detection_results, bool _show_rejected_markers);
 		void fillPose(const cv::Vec3d &_camera_rotation, const cv::Vec3d &_camera_translation, geometry_msgs::PoseStamped &_pose_in_out);
-
+		void getCameraCalibrationCoefficient();
 	protected:
 		cv::Ptr<cv::aruco::DetectorParameters> detector_parameters_;
 		cv::Ptr<cv::aruco::Dictionary> dictionary_;
